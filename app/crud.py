@@ -1,36 +1,17 @@
+# # crud.py
 from sqlalchemy.orm import Session
-from models import Book
-from schemas import BookSchema
+from models import Item
+from schemas import ItemCreate
 
+def get_item(db: Session, item_id: int):
+    return db.query(Item).filter(Item.id == item_id).first()
 
-def get_book(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Book).offset(skip).limit(limit).all()
+def get_items(db: Session, skip: int = 0, limit: int = 10):
+    return db.query(Item).offset(skip).limit(limit).all()
 
-
-def get_book_by_id(db: Session, book_id: int):
-    return db.query(Book).filter(Book.id == book_id).first()
-
-
-def create_book(db: Session, book: BookSchema):
-    _book = Book(title=book.title, description=book.description)
-    db.add(_book)
+def create_item(db: Session, item: ItemCreate):
+    db_item = Item(**item.dict())
+    db.add(db_item)
     db.commit()
-    db.refresh(_book)
-    return _book
-
-
-def remove_book(db: Session, book_id: int):
-    _book = get_book_by_id(db=db, book_id=book_id)
-    db.delete(_book)
-    db.commit()
-
-
-def update_book(db: Session, book_id: int, title: str, description: str):
-    _book = get_book_by_id(db=db, book_id=book_id)
-
-    _book.title = title
-    _book.description = description
-
-    db.commit()
-    db.refresh(_book)
-    return _book
+    db.refresh(db_item)
+    return db_item
